@@ -4,14 +4,13 @@ import socket
 
 class Server:
 
-    def __init__(self, port_number, rec_buf_size, send_buf_size):
+    def __init__(self, port_number, rec_buf_size):
         """port_number: int. port number to bind to.
             rec_buf_size: size of the receive buffer in bytes
-            send_buf_size: size of the send buffer."""
+        """
 
         self.port_number = port_number
         self.rec_buf_size = rec_buf_size
-        self.send_buf_size = send_buf_size
 
     def log(self, s):
         logging.info(s)
@@ -28,17 +27,19 @@ class Server:
             #allows the socket to accept connections
             s.listen(1)
             while True:
-                # blocks until a connection is received
-                connection, address = s.accept()
-                self.log(f"Accepted a connection from {address}")
-                # now, receive data from the connection
-                data = connection.recv(self.rec_buf_size)
-                self.log(f"received data: {repr(data)}")
-                
+                try:
+                    # blocks until a connection is received
+                    connection, address = s.accept()
+                    self.log(f"Accepted a connection from {address}")
+                    # now, receive data from the connection
+                    data = connection.recv(self.rec_buf_size)
+                    self.log(f"received data: {repr(data)}")
+                except KeyboardInterrupt:
+                    self.log("Closing server, goodbye!")    
 
 
 
 if __name__ == "__main__":
-    server = Server(56500, 1024, 2)
+    server = Server(56500, 1024)
     logging.basicConfig(level=logging.INFO)
     server.start()

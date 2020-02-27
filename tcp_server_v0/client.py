@@ -2,9 +2,8 @@ import socket
 
 class Client:
 
-    def __init__(self, port_number=None, send_buf_size=None, rec_buf_size=None):
+    def __init__(self, port_number=None, rec_buf_size=1024):
         self.port_number = port_number
-        self.send_buf_size = send_buf_size
         self.rec_buf_size = rec_buf_size
 
     def log(self, s):
