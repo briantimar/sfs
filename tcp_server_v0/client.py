@@ -24,6 +24,7 @@ class Client(TCPModule):
             if self.port_number is not None:
                 self.log(f"Binding to local port {self.port_number}...")
                 s.bind(('127.0.0.1', self.port_number))
+            s.settimeout(self.timeout)
             s.connect((foreign_addr, foreign_port))
 
             self.set_port_number(s.getsockname()[1])

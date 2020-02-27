@@ -7,11 +7,13 @@ from protocol import PREFIX_SIZE, decode_length, encode
 class TCPModule:
     """One half of a TCP connection."""
 
-    def __init__(self, port_number=None, rec_buf_size=1024):
+    def __init__(self, port_number=None, rec_buf_size=1024, timeout=5):
         """port_number: if provided, will attempt to bind to this port number.
-        rec_buf_size: the size of the receiving buffer used in recv() calls, in bytes."""
+        rec_buf_size: the size of the receiving buffer used in recv() calls, in bytes.
+        timeout = default timeout for all socket operations, in seconds"""
         self.port_number = port_number
         self.rec_buf_size = rec_buf_size
+        self.timeout = timeout
 
         self._id = "" if self.port_number is None else str(self.port_number)
 
@@ -90,9 +92,9 @@ class Server(TCPModule):
                     connection, address = s.accept()
                     self.log(f"Accepted a connection from {address}")
                     with connection:
+                        connection.settimeout(self.timeout)
                         self.read_message(connection)
                         self._respond(connection)
-                        
             except KeyboardInterrupt:
                 self.log("Closing server, goodbye!")    
 
