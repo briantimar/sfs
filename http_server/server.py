@@ -5,14 +5,18 @@ import argparse
 import threading
 
 from .tcp import TCPModule
+from .http import get_ok_response
 
-def handle_connection(connection, rec_buf_size):
+def handle_connection(connection, rec_buf_size, timeout=1):
     """Handles a single TCP connection (represented by a connected socket)"""
+    endpoint = TCPModule(rec_buf_size=rec_buf_size, timeout=timeout)
     with connection:
-        print(f"Thread opened for connection at {connection.getsockname()} to {connection.getpeername()}")
-        chunk = connection.recv(rec_buf_size)
-        print(chunk)
-    print("thread finished.")
+        chunk = endpoint.read_all(connection)
+        if len(chunk) > 0:
+            print(f"Thread opened for connection at {connection.getsockname()} to {connection.getpeername()}")
+            connection.sendall(get_ok_response("This is a test."))
+        # print(chunk)
+    # print("thread finished.")
     return
 
 class Server(TCPModule):
@@ -29,7 +33,8 @@ class Server(TCPModule):
         self.threads = []
 
     def make_thread(self, connection):
-        th = threading.Thread(target=handle_connection, args=(connection,self.rec_buf_size))
+        th = threading.Thread(target=handle_connection, args=(connection,self.rec_buf_size), 
+                                kwargs=dict(timeout=self.timeout))
         self.threads.append(th)
         return th
 
@@ -60,6 +65,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", default=8000, type=int)
     args = parser.parse_args()
-    server = Server(args.port, rec_buf_size=1024, queue_size=10)
+    server = Server(args.port, rec_buf_size=1024, queue_size=10, timeout=1)
     logging.basicConfig(level=logging.INFO)
     server.start()
